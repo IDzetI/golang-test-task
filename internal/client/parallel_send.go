@@ -16,18 +16,18 @@ func (c *client) ParallelSend(ctx context.Context, data service.Batch, errChan c
 	}
 
 	//set initial value
-	sent, dataMaxIndex, isLastIteration := 0, len(data)-1, false
+	sent, dataLength, isLastIteration := 0, len(data), false
 	limit, duration := c.service.GetLimits()
 
 	// create a channel to make sure that all parallel processing has been done
-	numberOfIteration := int(math.Ceil(float64(dataMaxIndex) / float64(limit)))
+	numberOfIteration := int(math.Ceil(float64(dataLength) / float64(limit)))
 	done := make(chan bool, numberOfIteration)
 
 	for true {
 		// calculate left border on next bach in data
 		leftBachBorder := sent + int(limit)
-		if leftBachBorder > dataMaxIndex {
-			leftBachBorder = dataMaxIndex
+		if leftBachBorder > dataLength {
+			leftBachBorder = dataLength
 			isLastIteration = true
 		}
 		// save processing start time
@@ -64,7 +64,7 @@ func (c *client) ParallelSend(ctx context.Context, data service.Batch, errChan c
 		}
 
 		// calculate required waiting time
-		sleepTime := time.Now().Sub(t) - duration
+		sleepTime := duration - time.Now().Sub(t)
 
 		// check the waiting time, since the work takes place in one thread
 		// and the service could work enough time when processing

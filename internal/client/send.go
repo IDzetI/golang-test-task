@@ -15,7 +15,7 @@ func (c *client) Send(ctx context.Context, data service.Batch) (sent int, err er
 	}
 
 	//set initial value
-	dataLength, isLastIteration := len(data)-1, false
+	dataLength, isLastIteration := len(data), false
 	limit, duration := c.service.GetLimits()
 
 	for true {
@@ -44,14 +44,13 @@ func (c *client) Send(ctx context.Context, data service.Batch) (sent int, err er
 
 		// check if all data has been sent,
 		// otherwise update the value of successfully sent
+		sent = leftBachBorder
 		if isLastIteration {
 			break
-		} else {
-			sent = leftBachBorder
 		}
 
 		// calculate required waiting time
-		sleepTime := time.Now().Sub(t) - duration
+		sleepTime := duration - time.Now().Sub(t)
 
 		// check the waiting time, since the work takes place in one thread
 		// and the service could work enough time when processing
